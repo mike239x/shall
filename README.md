@@ -10,5 +10,5 @@ Rationale:
 1) bash as scripting language kinda sucks
 2) bash as shell also kinda sucks - the editing of commands is not easy
 3) the colors - one can write using colors in bash, but one has to look up escape codes
-+ those constantly get lost in pipis between tools which carefully check if they are printing to tty or not
+also, those constantly get lost in pipes between tools which carefully check if they are printing to tty or not
 4) I believe turning shell into IDE for corresponding scripting lang would be the way to go.
