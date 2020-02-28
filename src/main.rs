@@ -12,24 +12,17 @@ fn main() {
            "{}{}{}",
            termion::clear::All,
            termion::cursor::Goto(1, 1),
-           termion::cursor::Hide)
+           termion::cursor::Show)
             .unwrap();
 
     stdout.flush().unwrap();
 
     for c in stdin.keys() {
         match c.unwrap() {
-            Key::Char('q') => break,
             Key::Char('\n') => print!("\n\r"),
             Key::Char(c) => print!("{}", c),
-            Key::Alt(c) => print!("^{}", c),
-            Key::Ctrl(c) => print!("*{}", c),
-            Key::Esc => print!("ESC"),
-            Key::Left => print!("←"),
-            Key::Right => print!("→"),
-            Key::Up => print!("↑"),
-            Key::Down => print!("↓"),
-            Key::Backspace => print!("×"),
+            Key::Esc => break,
+            Key::Backspace => print!("\u{8} \u{8}"),
             _ => {}
         }
         stdout.flush().unwrap();
