@@ -1,11 +1,12 @@
-// use termion::{color, style};
 use termion::event::Key;
-use termion::input::{TermRead, MouseTerminal};
+use termion::input::TermRead;
+// use termion::input::MouseTerminal;
 use termion::raw::IntoRawMode;
 use termion::screen::AlternateScreen;
 use std::io::{Write, stdout, stdin};
 
 /// a window on the terminal screen
+#[allow(dead_code)]
 struct Window {
     x : u16,
     y : u16,
@@ -21,18 +22,31 @@ fn main() {
 
     let terminal_size = termion::terminal_size().unwrap();
 
+    // shorthands for common actions
     macro_rules! clear_screen {
-        () => {
-            print!("{}", termion::clear::All);
-        };
+        () => { print!("{}", termion::clear::All); };
     }
     macro_rules! go_to {
         ($x:expr, $y:expr) => {
             print!("{}", termion::cursor::Goto($x, $y));
         };
     }
+    macro_rules! bg {
+        ($r:expr, $g:expr, $b:expr) => {
+            print!("{}", termion::color::Bg(termion::color::Rgb($r, $g, $b)));
+        };
+    }
+    macro_rules! fg {
+        ($r:expr, $g:expr, $b:expr) => {
+            print!("{}", termion::color::Fg(termion::color::Rgb($r, $g, $b)));
+        };
+    }
+
+    bg!(50, 50, 50);
+    fg!(250, 250, 250);
 
     clear_screen!();
+
     for k in 1..=terminal_size.1 {
         go_to!(1, k);
         print!("{}", k);
