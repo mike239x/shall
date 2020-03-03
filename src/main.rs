@@ -42,7 +42,7 @@ fn main() {
         };
     }
 
-    bg!(50, 50, 50);
+    bg!( 20,  20,  20);
     fg!(250, 250, 250);
 
     clear_screen!();
@@ -57,6 +57,27 @@ fn main() {
     go_to!(1, 1);
 
     stdout.flush().unwrap();
+
+    let _powerline = Window {
+        x: 1,
+        y: terminal_size.1,
+        w: terminal_size.0,
+        h: 1,
+    };
+
+    let _line_numbers = Window {
+        x: 1,
+        y: 1,
+        w: 3,
+        h: terminal_size.1 - 1,
+    };
+
+    let _text_buffer = Window {
+        x: 4,
+        y: 1,
+        w: terminal_size.0 - 3,
+        h: terminal_size.1 - 1,
+    };
 
     for c in stdin.keys() {
         match c.unwrap() {
