@@ -47,6 +47,8 @@ fn main() {
 
     clear_screen!();
 
+    let mut cursor_pos_in_text = ( 0, 0 );
+
     for k in 1..=terminal_size.1 {
         go_to!(1, k);
         print!("{}", k);
@@ -79,14 +81,36 @@ fn main() {
         h: terminal_size.1 - 1,
     };
 
+    go_to! (
+        _text_buffer.x + cursor_pos_in_text.0,
+        _text_buffer.y + cursor_pos_in_text.1
+    );
+    stdout.flush().unwrap();
+
     for c in stdin.keys() {
         match c.unwrap() {
-            Key::Char('\n') => print!("\n\r"),
-            Key::Char(c) => print!("{}", c),
+            Key::Char('\n') => {
+                //TODO: check bounds
+                cursor_pos_in_text.1 += 1;
+                cursor_pos_in_text.0 = 0;
+            },
+            Key::Char(c) => {
+                //TODO: check bounds
+                print!("{}", c);
+                cursor_pos_in_text.0 += 1;
+            },
             Key::Esc => break,
-            Key::Backspace => print!("\u{8} \u{8}"),
+            Key::Backspace => {
+                print!("\u{8} \u{8}");
+                //TODO: check bounds
+                cursor_pos_in_text.0 -= 1;
+            }
             _ => {}
         }
+        go_to! (
+            _text_buffer.x + cursor_pos_in_text.0,
+            _text_buffer.y + cursor_pos_in_text.1
+        );
         stdout.flush().unwrap();
     }
 
