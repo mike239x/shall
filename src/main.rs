@@ -1,119 +1,69 @@
-use termion::event::Key;
-use termion::input::TermRead;
+use std::io;
+use std::io::Write;
+
+use termion::screen::AlternateScreen;
 // use termion::input::MouseTerminal;
 use termion::raw::IntoRawMode;
-use termion::screen::AlternateScreen;
-use std::io::{Write, stdout, stdin};
+use termion::event::Key;
+use termion::input::TermRead;
 
-/// a window on the terminal screen
-#[allow(dead_code)]
-struct Window {
-    x : u16,
-    y : u16,
-    w : u16,
-    h : u16,
-}
+use tui::Terminal;
+use tui::backend::TermionBackend;
+use tui::widgets::{Widget, Block, Borders, Clear};
+use tui::layout::{Layout, Constraint, Direction, Rect};
+use tui::style::{Style, Color};
 
-fn main() {
-    let stdin = stdin();
+fn main() -> Result<(), io::Error> {
+    let stdin = io::stdin();
+    let mut stdout = AlternateScreen::from(io::stdout().into_raw_mode().unwrap());
     // let mut stdout = MouseTerminal::from(stdout().into_raw_mode().unwrap());
-    let mut stdout = AlternateScreen::from(stdout().into_raw_mode().unwrap());
     write!(stdout, "{}", termion::cursor::Show).unwrap();
-
-    let terminal_size = termion::terminal_size().unwrap();
-
-    // shorthands for common actions
-    macro_rules! clear_screen {
-        () => { print!("{}", termion::clear::All); };
-    }
-    macro_rules! go_to {
-        ($x:expr, $y:expr) => {
-            print!("{}", termion::cursor::Goto($x, $y));
-        };
-    }
-    macro_rules! bg {
-        ($r:expr, $g:expr, $b:expr) => {
-            print!("{}", termion::color::Bg(termion::color::Rgb($r, $g, $b)));
-        };
-    }
-    macro_rules! fg {
-        ($r:expr, $g:expr, $b:expr) => {
-            print!("{}", termion::color::Fg(termion::color::Rgb($r, $g, $b)));
-        };
-    }
-
-    bg!( 20,  20,  20);
-    fg!(250, 250, 250);
-
-    clear_screen!();
-
-    let mut cursor_pos_in_text = ( 0, 0 );
-
-    for k in 1..=terminal_size.1 {
-        go_to!(1, k);
-        print!("{}", k);
-    }
-
-    print!(" {:?}", terminal_size);
-
-    go_to!(1, 1);
-
-    stdout.flush().unwrap();
-
-    let _powerline = Window {
-        x: 1,
-        y: terminal_size.1,
-        w: terminal_size.0,
-        h: 1,
-    };
-
-    let _line_numbers = Window {
-        x: 1,
-        y: 1,
-        w: 3,
-        h: terminal_size.1 - 1,
-    };
-
-    let _text_buffer = Window {
-        x: 4,
-        y: 1,
-        w: terminal_size.0 - 3,
-        h: terminal_size.1 - 1,
-    };
-
-    go_to! (
-        _text_buffer.x + cursor_pos_in_text.0,
-        _text_buffer.y + cursor_pos_in_text.1
-    );
-    stdout.flush().unwrap();
-
+    let backend = TermionBackend::new(stdout);
+    let mut terminal = Terminal::new(backend)?;
     for c in stdin.keys() {
         match c.unwrap() {
-            Key::Char('\n') => {
-                //TODO: check bounds
-                cursor_pos_in_text.1 += 1;
-                cursor_pos_in_text.0 = 0;
-            },
-            Key::Char(c) => {
-                //TODO: check bounds
-                print!("{}", c);
-                cursor_pos_in_text.0 += 1;
-            },
             Key::Esc => break,
-            Key::Backspace => {
-                print!("\u{8} \u{8}");
-                //TODO: check bounds
-                cursor_pos_in_text.0 -= 1;
-            }
+            Key::Char(c) => {
+            },
             _ => {}
         }
-        go_to! (
-            _text_buffer.x + cursor_pos_in_text.0,
-            _text_buffer.y + cursor_pos_in_text.1
-        );
-        stdout.flush().unwrap();
-    }
+        // stdout.flush().unwrap(); ?
+        terminal.draw(|mut f| {
+            let chunks = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints(
+                    vec![
+                        Constraint::Min(1),
+                        Constraint::Length(1),
+                    ]
+                )
+                .split(f.size());
+            let powerline = chunks[1];
+            let rest   = chunks[0];
+            let chunks =  Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints(
+                    vec![
+                        Constraint::Length(3),
+                        Constraint::Min(1)
+                    ]
+                )
+                .split(rest);
+            let line_numbers = chunks[0];
+            let text_buffer  = chunks[1];
+            let block = Block::default()
+                 .title("text buff")
+                 .borders(Borders::ALL);
+            f.render_widget(block, text_buffer);
+            let block = Block::default()
+                 .style(Style::default().bg(Color::Rgb(40,40,40)));
+            f.render_widget(block, line_numbers);
+            let block = Block::default()
+                 .title("powerline")
+                 .style(Style::default().bg(Color::Green));
+            f.render_widget(block, powerline);
+        });
 
-    clear_screen!();
-    go_to!(1, 1);
+    }
+    Ok(())
 }
